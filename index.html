@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRT to LRC Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Hide the default file input */
+        #srtFileInput {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col min-h-screen">
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-8 md:p-10 fade-in">
+            
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">SRT to LRC Converter</h1>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">Easily convert your SRT subtitle files into LRC lyrics format.</p>
+            </div>
+
+            <!-- Metadata Inputs -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div>
+                    <label for="songTitle" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Song Title</label>
+                    <input type="text" id="songTitle" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="e.g., Bohemian Rhapsody">
+                </div>
+                <div>
+                    <label for="artist" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Artist</label>
+                    <input type="text" id="artist" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="e.g., Queen">
+                </div>
+                <div>
+                    <label for="length" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Length (Optional)</label>
+                    <input type="text" id="length" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="e.g., 05:55">
+                </div>
+            </div>
+
+            <!-- Text Areas and Button -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- SRT Input Section -->
+                <div>
+                    <!-- Tab Navigation -->
+                    <div class="border-b border-gray-200 dark:border-gray-700 mb-4">
+                        <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="srtTab">
+                            <li class="mr-2">
+                                <button class="inline-block p-4 border-b-2 rounded-t-lg" id="paste-tab" type="button">Paste Text</button>
+                            </li>
+                            <li class="mr-2">
+                                <button class="inline-block p-4 border-b-2 rounded-t-lg" id="upload-tab" type="button">Upload File</button>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- Tab Content -->
+                    <div id="srtTabContent">
+                        <!-- Paste Text Tab Panel -->
+                        <div id="paste-content">
+                             <label for="srtInput" class="sr-only">Paste SRT Content Here</label>
+                            <textarea id="srtInput" rows="12" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="1\n00:00:01,000 --> 00:00:04,000\nIs this the real life?"></textarea>
+                        </div>
+                        <!-- Upload File Tab Panel -->
+                        <div id="upload-content" class="hidden">
+                             <input type="file" id="srtFileInput" accept=".srt">
+                             <label for="srtFileInput" class="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-700 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition p-4 text-center" style="min-height: 298px;">
+                                <svg class="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">SRT files only</p>
+                                <p id="fileName" class="text-sm text-blue-500 mt-2"></p>
+                             </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LRC Output -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                         <label for="lrcOutput" class="block text-sm font-medium text-gray-700 dark:text-gray-300">LRC Output</label>
+                         <button id="copyButton" class="text-sm bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 font-medium py-1 px-3 rounded-lg transition">Copy</button>
+                    </div>
+                    <textarea id="lrcOutput" rows="12" readonly class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-4 cursor-copy focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition"></textarea>
+                </div>
+            </div>
+            
+            <!-- Convert Button -->
+            <div class="mt-8 text-center">
+                <button id="convertButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-10 rounded-lg text-lg transition-transform transform hover:scale-105 shadow-lg">
+                    Convert
+                </button>
+            </div>
+             <!-- Message Box -->
+            <div id="messageBox" class="fixed top-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300">
+                Copied to clipboard!
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4">
+        <p class="text-gray-500 dark:text-gray-400 text-sm">
+            Copyright &copy; <span id="copyright-year"></span> Tasfiqul Alam Pabel. All Rights Reserved.
+        </p>
+    </footer>
+
+    <script>
+        // --- DOM Element References ---
+        const songTitleInput = document.getElementById('songTitle');
+        const artistInput = document.getElementById('artist');
+        const lengthInput = document.getElementById('length');
+        const srtInput = document.getElementById('srtInput');
+        const lrcOutput = document.getElementById('lrcOutput');
+        const convertButton = document.getElementById('convertButton');
+        const copyButton = document.getElementById('copyButton');
+        const copyrightYearSpan = document.getElementById('copyright-year');
+        const messageBox = document.getElementById('messageBox');
+        
+        // Tab elements
+        const pasteTab = document.getElementById('paste-tab');
+        const uploadTab = document.getElementById('upload-tab');
+        const pasteContent = document.getElementById('paste-content');
+        const uploadContent = document.getElementById('upload-content');
+        const srtFileInput = document.getElementById('srtFileInput');
+        const fileNameDisplay = document.getElementById('fileName');
+
+        // --- Core Functions ---
+
+        /**
+         * Converts SRT time format (HH:MM:SS,ms) to LRC time format [mm:ss.xx].
+         * @param {string} srtTime - The time string from the SRT file.
+         * @returns {string} The formatted time string for LRC.
+         */
+        function convertSrtTimeToLrc(srtTime) {
+            const [timePart, milliseconds] = srtTime.split(',');
+            const [hours, minutes, seconds] = timePart.split(':').map(Number);
+
+            const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+            const lrcMinutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+            const lrcSeconds = (totalSeconds % 60).toString().padStart(2, '0');
+            const lrcCentiseconds = Math.round(Number(milliseconds) / 10).toString().padStart(2, '0');
+
+            return `[${lrcMinutes}:${lrcSeconds}.${lrcCentiseconds}]`;
+        }
+
+        /**
+         * Main function to convert SRT content to LRC format.
+         */
+        function performConversion() {
+            const srtText = srtInput.value.trim();
+            if (!srtText) {
+                lrcOutput.value = "Please paste or upload SRT content first.";
+                return;
+            }
+
+            let lrcContent = [];
+            if (songTitleInput.value) lrcContent.push(`[ti:${songTitleInput.value}]`);
+            if (artistInput.value) lrcContent.push(`[ar:${artistInput.value}]`);
+            if (lengthInput.value) lrcContent.push(`[le:${lengthInput.value}]`);
+            if (lrcContent.length > 0) lrcContent.push(''); 
+
+            const srtBlocks = srtText.split(/\n\s*\n/);
+
+            srtBlocks.forEach(block => {
+                const lines = block.trim().split('\n');
+                if (lines.length < 2) return; 
+
+                const timeLine = lines.find(line => line.includes('-->'));
+                if (!timeLine) return;
+
+                const startTime = timeLine.split(' --> ')[0].trim();
+                const lrcTime = convertSrtTimeToLrc(startTime);
+                
+                const timeLineIndex = lines.indexOf(timeLine);
+                const lyricLines = lines.slice(timeLineIndex + 1).join(' ');
+
+                if (lyricLines) {
+                    lrcContent.push(`${lrcTime}${lyricLines}`);
+                }
+            });
+
+            lrcOutput.value = lrcContent.join('\n');
+        }
+        
+        /**
+         * Copies the LRC output to the clipboard.
+         */
+        function copyToClipboard() {
+            if (!lrcOutput.value) return;
+
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = lrcOutput.value;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            
+            try {
+                document.execCommand('copy');
+                messageBox.classList.remove('translate-x-full');
+                messageBox.classList.add('translate-x-0');
+                setTimeout(() => {
+                    messageBox.classList.remove('translate-x-0');
+                    messageBox.classList.add('translate-x-full');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+            
+            document.body.removeChild(tempTextArea);
+        }
+
+        /**
+         * Handles tab switching UI.
+         * @param {string} activeTab - The ID of the tab to activate ('paste' or 'upload').
+         */
+        function switchTab(activeTab) {
+            if (activeTab === 'paste') {
+                // Activate Paste Tab
+                pasteTab.classList.add('text-blue-600', 'dark:text-blue-500', 'border-blue-600', 'dark:border-blue-500');
+                pasteTab.classList.remove('border-transparent', 'hover:text-gray-600', 'dark:hover:text-gray-300', 'hover:border-gray-300', 'dark:hover:border-gray-700');
+                pasteContent.classList.remove('hidden');
+                
+                // Deactivate Upload Tab
+                uploadTab.classList.remove('text-blue-600', 'dark:text-blue-500', 'border-blue-600', 'dark:border-blue-500');
+                uploadTab.classList.add('border-transparent', 'hover:text-gray-600', 'dark:hover:text-gray-300', 'hover:border-gray-300', 'dark:hover:border-gray-700');
+                uploadContent.classList.add('hidden');
+            } else { // activeTab === 'upload'
+                // Activate Upload Tab
+                uploadTab.classList.add('text-blue-600', 'dark:text-blue-500', 'border-blue-600', 'dark:border-blue-500');
+                uploadTab.classList.remove('border-transparent', 'hover:text-gray-600', 'dark:hover:text-gray-300', 'hover:border-gray-300', 'dark:hover:border-gray-700');
+                uploadContent.classList.remove('hidden');
+
+                // Deactivate Paste Tab
+                pasteTab.classList.remove('text-blue-600', 'dark:text-blue-500', 'border-blue-600', 'dark:border-blue-500');
+                pasteTab.classList.add('border-transparent', 'hover:text-gray-600', 'dark:hover:text-gray-300', 'hover:border-gray-300', 'dark:hover:border-gray-700');
+                pasteContent.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Handles the file upload process.
+         * @param {Event} event - The file input change event.
+         */
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                fileNameDisplay.textContent = '';
+                return;
+            }
+
+            fileNameDisplay.textContent = `Selected: ${file.name}`;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                srtInput.value = e.target.result;
+                // Switch back to the paste tab to show the content
+                switchTab('paste');
+            };
+            reader.onerror = () => {
+                srtInput.value = 'Error reading file.';
+                fileNameDisplay.textContent = 'Could not read file.';
+            };
+            reader.readAsText(file);
+        }
+
+        // --- Event Listeners ---
+        convertButton.addEventListener('click', performConversion);
+        copyButton.addEventListener('click', copyToClipboard);
+        pasteTab.addEventListener('click', () => switchTab('paste'));
+        uploadTab.addEventListener('click', () => switchTab('upload'));
+        srtFileInput.addEventListener('change', handleFileUpload);
+
+
+        // --- Initial Setup ---
+        /**
+         * Sets the copyright year automatically.
+         */
+        function setCopyrightYear() {
+            const currentYear = new Date().getFullYear();
+            copyrightYearSpan.textContent = currentYear;
+        }
+
+        // Run setup functions on page load
+        setCopyrightYear();
+        // Set the initial active tab
+        switchTab('paste');
+    </script>
+
+</body>
+  </html>
